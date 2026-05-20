@@ -1,5 +1,5 @@
 // lib/features/products/presentation/screens/add_product_screen.dart
-
+// AddProductionscreen
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,15 +23,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
-  final _categoryController = TextEditingController();
   final _imageController = TextEditingController();
   final _descriptionController = TextEditingController();
+
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Load categories if not already loaded
+    final productListBloc = context.read<ProductListBloc>();
+    if (productListBloc.state is! ProductListLoaded) {
+      productListBloc.add(const FetchProductsEvent());
+    }
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _priceController.dispose();
-    _categoryController.dispose();
     _imageController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -45,7 +56,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       title: _titleController.text.trim(),
       price: double.tryParse(_priceController.text.trim()) ?? 0.0,
       description: _descriptionController.text.trim(),
-      category: _categoryController.text.trim(),
+      category: _selectedCategory ?? '',
       image: _imageController.text.trim().isEmpty
           ? 'https://via.placeholder.com/300'
           : _imageController.text.trim(),
@@ -65,12 +76,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return BlocListener<AddProductBloc, AddProductState>(
       listener: (context, state) {
         if (state is AddProductSuccess) {
-          // Refresh the product list
+          // Refresh product list after adding
           context.read<ProductListBloc>().add(
                 const RefreshProductsEvent(),
               );
 
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Product added successfully'),
@@ -78,8 +88,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
           );
 
-          // Go back to previous screen
-           context.go('/products');
+          context.go('/products');
         }
 
         if (state is AddProductError) {
@@ -96,7 +105,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // ── App Bar ────────────────────────────────────────────
+              // App Bar
               Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
                 child: Row(
@@ -104,7 +113,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   children: [
                     _IconButton(
                       icon: Icons.arrow_back_rounded,
-                     onTap: () => context.go('/products'),
+                      onTap: () => context.go('/products'),
                     ),
                     Text(
                       'Add Product',
@@ -126,64 +135,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        // ── Product Image Preview ──────────────────
-                        Container(
-                          width: double.infinity,
-                          height: 220.h,
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(24.r),
-                            border: Border.all(
-                              color: AppColors.border,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 70.w,
-                                height: 70.w,
-                                decoration: BoxDecoration(
-                                  color:
-                                      AppColors.scaffoldBackground,
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                    20.r,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  size: 34.sp,
-                                  color: AppColors.iconGrey,
-                                ),
-                              ),
-                              SizedBox(height: 16.h),
-                              Text(
-                                'Upload Product Image',
-                                style: TextStyle(
-                                  fontSize:
-                                      AppTextSizes.bodyMedium,
-                                  fontWeight:
-                                      FontWeight.w600,
-                                  color:
-                                      AppColors.headingText,
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'JPG, PNG up to 5MB',
-                                style: TextStyle(
-                                  fontSize:
-                                      AppTextSizes.bodySmall,
-                                  color:
-                                      AppColors.bodyText,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
                         SizedBox(height: 24.h),
 
                         // Product Name
@@ -191,11 +142,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           controller: _titleController,
                           label: 'Product Name',
                           hint: 'Enter product name',
-                          prefixIcon:
-                              Icons.shopping_bag_outlined,
+                          prefixIcon: Icons.shopping_bag_outlined,
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter product name';
                             }
                             return null;
@@ -213,21 +162,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          prefixIcon:
-                              Icons.attach_money_rounded,
+                          prefixIcon: Icons.attach_money_rounded,
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter price';
                             }
 
                             final price =
-                                double.tryParse(
-                              value.trim(),
-                            );
+                                double.tryParse(value.trim());
 
-                            if (price == null ||
-                                price <= 0) {
+                            if (price == null || price <= 0) {
                               return 'Enter valid price';
                             }
 
@@ -237,20 +181,112 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                         SizedBox(height: 16.h),
 
-                        // Category
-                        CustomTextField(
-                          controller:
-                              _categoryController,
-                          label: 'Category',
-                          hint: 'Enter category',
-                          prefixIcon:
-                              Icons.category_outlined,
-                          validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
-                              return 'Please enter category';
+                        // Category Dropdown
+                        BlocBuilder<ProductListBloc, ProductListState>(
+                          builder: (context, state) {
+                            List<String> categories = [];
+
+                            if (state is ProductListLoaded) {
+                              categories = state.categories
+                                  .where(
+                                    (category) =>
+                                        category.toLowerCase() !=
+                                        'all',
+                                  )
+                                  .toList();
                             }
-                            return null;
+
+                            return Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Category',
+                                  style: TextStyle(
+                                    fontSize:
+                                        AppTextSizes.bodyMedium,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        AppColors.headingText,
+                                  ),
+                                ),
+                                SizedBox(height: 8.h),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedCategory,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    hintText: 'Select category',
+                                    prefixIcon: const Icon(
+                                      Icons.category_outlined,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColors.white,
+                                    contentPadding:
+                                        EdgeInsets.symmetric(
+                                      horizontal: 16.w,
+                                      vertical: 18.h,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        16.r,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color:
+                                            AppColors.border,
+                                      ),
+                                    ),
+                                    enabledBorder:
+                                        OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        16.r,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color:
+                                            AppColors.border,
+                                      ),
+                                    ),
+                                    focusedBorder:
+                                        OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        16.r,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                  items: categories.map((category) {
+                                    return DropdownMenuItem<
+                                        String>(
+                                      value: category,
+                                      child: Text(
+                                        category,
+                                        overflow:
+                                            TextOverflow
+                                                .ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedCategory =
+                                          value;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null ||
+                                        value.isEmpty) {
+                                      return 'Please select category';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            );
                           },
                         ),
 
@@ -261,16 +297,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           controller: _imageController,
                           label: 'Image URL',
                           hint: 'Paste image URL',
-                          prefixIcon:
-                              Icons.link_rounded,
+                          prefixIcon: Icons.link_rounded,
                         ),
 
                         SizedBox(height: 16.h),
 
                         // Description
                         CustomTextField(
-                          controller:
-                              _descriptionController,
+                          controller: _descriptionController,
                           label: 'Description',
                           hint:
                               'Write product description...',
@@ -320,10 +354,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Reusable Icon Button
-// ─────────────────────────────────────────────────────────────
-
+// Reusable Back Icon Button
 class _IconButton extends StatelessWidget {
   const _IconButton({
     required this.icon,

@@ -8,6 +8,7 @@ import '../models/product_model.dart';
 abstract class ProductLocalDataSource {
   Future<void> addProduct(ProductModel product);
   Future<List<ProductModel>> getProducts();
+  Future<List<String>> getCategories();
 }
 
 @LazySingleton(as: ProductLocalDataSource)
@@ -24,9 +25,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     products.add(product);
 
-    final jsonList = products
-        .map((e) => jsonEncode(e.toJson()))
-        .toList();
+    final jsonList = products.map((e) => jsonEncode(e.toJson())).toList();
 
     await prefs.setStringList(keyProducts, jsonList);
   }
@@ -37,10 +36,17 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     return jsonList
         .map(
-          (e) => ProductModel.fromJson(
-            jsonDecode(e) as Map<String, dynamic>,
-          ),
+          (e) => ProductModel.fromJson(jsonDecode(e) as Map<String, dynamic>),
         )
         .toList();
+  }
+
+  @override
+  Future<List<String>> getCategories() async {
+    final products = await getProducts();
+
+    final categories = products.map((e) => e.category).toSet().toList();
+
+    return categories;
   }
 }

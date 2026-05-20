@@ -16,6 +16,14 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:product_management_app/core/api/dio_client.dart' as _i368;
 import 'package:product_management_app/core/api/network_info.dart' as _i908;
 import 'package:product_management_app/core/di/register_module.dart' as _i72;
+import 'package:product_management_app/features/auth/data/repositories/auth_repository_impl.dart'
+    as _i901;
+import 'package:product_management_app/features/auth/domain/repositories/auth_repository.dart'
+    as _i49;
+import 'package:product_management_app/features/auth/domain/usecases/login_usecase.dart'
+    as _i479;
+import 'package:product_management_app/features/auth/presentation/bloc/login/login_bloc.dart'
+    as _i5;
 import 'package:product_management_app/features/products/data/datasource/product_local_datasource.dart'
     as _i378;
 import 'package:product_management_app/features/products/data/datasource/product_remote_datasource.dart'
@@ -31,9 +39,9 @@ import 'package:product_management_app/features/products/domain/usecases/product
 import 'package:product_management_app/features/products/presentation/bloc/add_product/add_product_bloc.dart'
     as _i707;
 import 'package:product_management_app/features/products/presentation/bloc/product_detail/product_detail_bloc.dart'
-    as _i861;
+    as _i390;
 import 'package:product_management_app/features/products/presentation/bloc/product_list/product_list_bloc.dart'
-    as _i501;
+    as _i81;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -52,8 +60,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i161.InternetConnection>(
       () => registerModule.internetConnection,
     );
+    gh.lazySingleton<_i49.AuthRepository>(() => _i901.AuthRepositoryImpl());
     gh.lazySingleton<_i908.NetworkInfo>(
       () => _i908.NetworkInfoImpl(gh<_i161.InternetConnection>()),
+    );
+    gh.lazySingleton<_i479.LoginUseCase>(
+      () => _i479.LoginUseCase(gh<_i49.AuthRepository>()),
+    );
+    gh.factory<_i5.LoginBloc>(
+      () => _i5.LoginBloc(loginUseCase: gh<_i479.LoginUseCase>()),
     );
     gh.lazySingleton<_i404.ProductRemoteDataSource>(
       () => _i404.ProductRemoteDataSourceImpl(gh<_i368.DioClient>()),
@@ -83,8 +98,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i566.GetCategoriesUseCase>(
       () => _i566.GetCategoriesUseCase(gh<_i197.ProductRepository>()),
     );
-    gh.factory<_i501.ProductListBloc>(
-      () => _i501.ProductListBloc(
+    gh.factory<_i81.ProductListBloc>(
+      () => _i81.ProductListBloc(
         getProductsUseCase: gh<_i566.GetProductsUseCase>(),
         getCategoriesUseCase: gh<_i566.GetCategoriesUseCase>(),
       ),
@@ -94,8 +109,8 @@ extension GetItInjectableX on _i174.GetIt {
         addProductUseCase: gh<_i176.AddProductUseCase>(),
       ),
     );
-    gh.factory<_i861.ProductDetailBloc>(
-      () => _i861.ProductDetailBloc(
+    gh.factory<_i390.ProductDetailBloc>(
+      () => _i390.ProductDetailBloc(
         getProductByIdUseCase: gh<_i566.GetProductByIdUseCase>(),
       ),
     );
