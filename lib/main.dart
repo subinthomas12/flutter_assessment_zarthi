@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:product_management_app/core/di/injection.dart';
+import 'package:product_management_app/features/auth/presentation/bloc/login/login_bloc.dart';
 import 'package:product_management_app/features/products/presentation/bloc/add_product/add_product_bloc.dart';
 import 'package:product_management_app/features/products/presentation/bloc/product_detail/product_detail_bloc.dart';
 import 'package:product_management_app/features/products/presentation/bloc/product_list/product_list_bloc.dart';
@@ -26,10 +27,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<LoginBloc>(create: (_) => getIt<LoginBloc>()),
+
         // Product List Bloc
-        BlocProvider<ProductListBloc>(
-          create: (_) => getIt<ProductListBloc>(),
-        ),
+        BlocProvider<ProductListBloc>(create: (_) => getIt<ProductListBloc>()),
 
         // Product Detail Bloc
         BlocProvider<ProductDetailBloc>(
@@ -37,9 +38,7 @@ class MyApp extends StatelessWidget {
         ),
 
         // Add Product Bloc
-        BlocProvider<AddProductBloc>(
-          create: (_) => getIt<AddProductBloc>(),
-        ),
+        BlocProvider<AddProductBloc>(create: (_) => getIt<AddProductBloc>()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
@@ -50,9 +49,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Product Management App',
             routerConfig: appRouter,
-            theme: ThemeData(
-              useMaterial3: true,
-            ),
+            theme: ThemeData(useMaterial3: true),
           );
         },
       ),
