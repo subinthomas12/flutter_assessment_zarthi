@@ -41,11 +41,17 @@ dependencies:
   get_it: ^9.2.1
   injectable: ^3.0.0
   freezed_annotation: ^3.1.0
-  json_annotation: ^4.11.0
+  json_annotation: ^4.12.0
   cached_network_image: ^3.4.1
   flutter_screenutil: ^5.9.3
   shimmer: ^3.0.0
   go_router: ^17.2.3
+  pretty_dio_logger: ^1.4.0
+  dartz: ^0.10.1
+  internet_connection_checker_plus: ^3.0.0
+  hive: ^2.2.3
+  hivez_flutter: ^1.2.2
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -58,9 +64,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   freezed: ^3.2.5
-  json_serializable: ^6.13.2
+  json_serializable: ^6.14.0
   retrofit_generator: ^10.2.5
   injectable_generator: ^3.0.2
+  build_runner: ^2.15.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

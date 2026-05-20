@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'api_constants.dart';
+import 'package:product_management_app/core/api/api_constants.dart';
 
 // ─────────────────────────────────────────────
 // AUTH INTERCEPTOR
